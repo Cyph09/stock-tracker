@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+      integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+      crossorigin="anonymous"
+    />
+
+    <title>Stockcontrol</title>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-wrapper blue">
+        <div class="container">
+          <a href="#" class="brand-logo center">Control Stock</a>
+          <ul class="right">
+            <li>
+              <a href="#" class="clear-btn btn blue lighten-3">Clear All</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <br />
+    <div class="container">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Add Item</span>
+          <form class="col">
+            <div class="row">
+              <div class="input-field col s6">
+                <input type="text" placeholder="Item Name" id="item-name" />
+                <label for="item-name">Item</label>
+              </div>
+              <div class="input-field col s6">
+                <input type="number" placeholder="Add Quantity" id="item-qty" />
+                <label for="item-qty">Quantity</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s6">
+                <input type="text" placeholder="Unit Cost" id="item-unit-cost" />
+                <label for="item-price">Unit Cost</label>
+              </div>
+              <!-- <div class="input-field col s6">
+                <input type="text" placeholder="Total Cost" id="item-total-cost" disabled/>
+                <label for="item-total-cost">Total Cost</label>
+              </div> -->
+            </div>
+            <button class="add-btn btn blue darken-3">
+                    <i class="fa fa-plus"></i>Add Item
+                  </button>
+                  <!-- <button class="edit-btn btn orange">
+                    <i class="fa fa-edit"></i>Edit Item
+                  </button>
+                  <button class="stockout-btn btn green">
+                        <i class="far fa-arrow-alt-circle-right"></i></i>Stock out Item
+                  </button>
+                  <button class="delete-btn btn red">
+                    <i class="far fa-trash-alt"></i>Delete Item
+                  </button> -->
+                  <button class="back-btn btn grey right">
+                    <i class="fa fa-chevron-left"></i>Back
+                  </button>
+          </form>
+        </div>
+      </div>
+    <br>
+        <!-- Inventory section -->
+        <div id="inventory-section">
+            <h4>Items Inventory</h4>
+        <!-- item count and total cost -->
+            <div class="row">
+                <div class="col s6">
+                    <h5>Total Items: <span class="total-items">0</span></h5>
+                </div>
+                <div class="col s6">
+                    <h5>Total Cost: <span class="total-cost">0</span></h5>
+                </div>
+            </div>
+
+            <!-- Item inventory/List-->
+            <table class="highlight" id="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Unit Cost</th>
+                        <th>Cost</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+        
+                <tbody id="inventory-tbody">
+                    <!-- <tr>
+                    <td>1200L Fridge</td>
+                    <td>23</td>
+                    <td>$540</td>
+                    <td>2700</td>
+                    <td><a href="#"><i class=" edit-item fas fa-pencil-alt"></i></a></td>
+                    </tr>-->
+                </tbody>
+            </table>
+        </div>
+            
+        <br>
+            
+        <!-- Sales section 
+        <div id="sales-section">
+            <h4>Items Sales</h4>
+             --items sold and total sales--
+            <div class="row">
+                <div class="col s6">
+                    <h5>Total Items: <span class="total-items">0</span></h5>
+                </div>
+                <div class="col s6">
+                    <h5>Total Amount: <span class="total-cost">0</span></h5>
+                </div>
+            </div>
+            --Item sales/List--
+            <table class="highlight">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+        
+                <tbody>
+                    <tr>
+                    <td>1200L Fridge</td>
+                    <td>2</td>
+                    <td>$540</td>
+                    <td>$1080</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>-->
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

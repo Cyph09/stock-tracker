@@ -1,4 +1,43 @@
 // Storage module
+const StorageController = (function() {
+  // Public members
+
+  return {
+    storeItem: function(item) {
+      let items;
+
+      // check if any items in local storage
+      if (localStorage.getItem("items") === null) {
+        items = [];
+        // Push new Item
+        items.push(item);
+
+        // Set local storage
+        localStorage.setItem("items", JSON.stringify(items));
+      } else {
+        // Get items already in local storage
+        items = JSON.parse(localStorage.getItem("items"));
+
+        // Push new item
+        items.push(item);
+
+        // Re set local storage
+        localStorage.setItem("items", JSON.stringify(items));
+      }
+    },
+
+    getItemsFromStorage: function() {
+      let items;
+      if (localStorage.getItem("items") === null) {
+        items = [];
+      } else {
+        items = JSON.parse(localStorage.getItem("items"));
+      }
+
+      return items;
+    }
+  };
+})();
 
 // Item module
 const ItemController = (function() {
@@ -14,34 +53,23 @@ const ItemController = (function() {
 
   // Data structure/state
   const data = {
-    items: [
-      //   {
-      //     id: 0,
-      //     name: "1200L Fridge",
-      //     quantity: 23,
-      //     unitCost: 540
-      //   },
-      //   {
-      //     id: 2,
-      //     name: "Maroon Leather sof",
-      //     quantity: 6,
-      //     unitCost: 380
-      //   },
-      //   {
-      //     id: 3,
-      //     name: "4P Dining Table",
-      //     quantity: 4,
-      //     unitCost: 217
-      //   },
-      //   {
-      //     id: 4,
-      //     name: "King size Bed",
-      //     quantity: 14,
-      //     unitCost: 512
-      //   }
-    ],
+    // items: [
+    //   {
+    //     id: 0,
+    //     name: "1200L Fridge",
+    //     quantity: 23,
+    //     unitCost: 540
+    //   },
+    //   {
+    //     id: 2,
+    //     name: "Maroon Leather sofa",
+    //     quantity: 6,
+    //     unitCost: 380
+    //   },
+    // ],
+    items: StorageController.getItemsFromStorage(),
     currentItem: null,
-    totlaItems: 0,
+    totalItems: 0,
     totalCost: 0
   };
 
@@ -106,6 +134,27 @@ const ItemController = (function() {
       return found;
     },
 
+    // Remove current Item
+    deleteItem: function(id) {
+      // Get Ids
+      const ids = data.items.map(function(item) {
+        return item.id;
+      });
+
+      // Get index
+      const index = ids.indexOf(id);
+
+      // Remove item
+      data.items.splice(index, 1);
+    },
+
+    // Clear All items
+    clearAllItems: function() {
+      data.items = [];
+      data.totalItems = 0;
+      data.totalCost = 0;
+    },
+
     // Set the current
     setCurrentItem: function(item) {
       data.currentItem = item;
@@ -163,6 +212,7 @@ const UIController = (function() {
     inventorySection: "#inventory-section",
     inventoryTBody: "#inventory-tbody",
     tBodyRows: "#inventory-tbody tr",
+    clearBtn: ".clear-btn",
     addBtn: ".add-btn",
     editBtn: ".edit-btn",
     deleteBtn: ".delete-btn",
@@ -250,6 +300,33 @@ const UIController = (function() {
       });
     },
 
+    deleteTRowItem: function(id) {
+      const itemID = `#item-${id}`;
+      const item = document.querySelector(itemID);
+
+      let tBodyRows = document.querySelectorAll(UISelectors.tBodyRows);
+      if (tBodyRows.length === 1) {
+        item.remove();
+        setTimeout(function() {
+          UIController.hideInventorySecotion();
+        }, 1 * 1000);
+      } else {
+        item.remove();
+      }
+    },
+    // Remove all items from UI
+    removeItems: function() {
+      let tBodyRows = document.querySelectorAll(UISelectors.tBodyRows);
+      // Convert tBodyRows into an array
+      tBodyRows = Array.from(tBodyRows);
+
+      tBodyRows.forEach(function(item) {
+        item.remove();
+      });
+      setTimeout(function() {
+        UIController.hideInventorySecotion();
+      }, 1 * 1000);
+    },
     // Add/set total items
     showTotalItems: function(total) {
       document.querySelector(UISelectors.totalItems).textContent = total;
@@ -310,7 +387,7 @@ const UIController = (function() {
 })();
 
 // App module
-const App = (function(ItemCtrl, UICtrl) {
+const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
   // Load event listeners
   const loadEventListeners = function() {
     //   GEt UI Selectors
@@ -348,6 +425,11 @@ const App = (function(ItemCtrl, UICtrl) {
     document
       .querySelector(UISelectors.deleteBtn)
       .addEventListener("click", itemDeleteSubmit);
+
+    // Clar All button click
+    document
+      .querySelector(UISelectors.clearBtn)
+      .addEventListener("click", clearAllItemsSubmit);
   };
 
   //   Get inventory total
@@ -384,6 +466,9 @@ const App = (function(ItemCtrl, UICtrl) {
 
       //   Set inventory total
       setInventroyTotals();
+
+      // Store in local storage
+      StorageCtrl.storeItem(newItem);
 
       //   Clear form fields
       UICtrl.clearInput();
@@ -441,8 +526,35 @@ const App = (function(ItemCtrl, UICtrl) {
 
   // Delete item submit
   const itemDeleteSubmit = function(e) {
-    // Remove current item from data structure
-    ItemCtrl.removeCurrentItem();
+    // Get current item
+    const currentItem = ItemCtrl.getCurrentItem();
+
+    // Delete from data structure
+    ItemCtrl.deleteItem(currentItem.id);
+
+    // Delete from UI
+    UICtrl.deleteTRowItem(currentItem.id);
+
+    //   Update inventory totals
+    setInventroyTotals();
+
+    // Clear edit
+
+    UICtrl.clearEditState();
+
+    e.preventDefault();
+  };
+
+  // Clear all submit
+  const clearAllItemsSubmit = function(e) {
+    // Clear items in data structure
+    ItemCtrl.clearAllItems();
+
+    // Remove all items from UI
+    UICtrl.removeItems();
+
+    //   Update inventory totals
+    setInventroyTotals();
 
     e.preventDefault();
   };
@@ -473,7 +585,7 @@ const App = (function(ItemCtrl, UICtrl) {
       loadEventListeners();
     }
   };
-})(ItemController, UIController);
+})(ItemController, StorageController, UIController);
 
 // Start the app
 

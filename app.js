@@ -35,6 +35,30 @@ const StorageController = (function() {
       }
 
       return items;
+    },
+    UpdateItemStorage: function(updatedItem) {
+      let items = JSON.parse(localStorage.getItem("items"));
+      items.forEach(function(item, index) {
+        if (updatedItem.id === item.id) {
+          items.splice(index, 1, updatedItem);
+        }
+      });
+
+      localStorage.setItem("items", JSON.stringify(items));
+    },
+
+    deleteItemFromLocalStorage: function(id) {
+      let items = JSON.parse(localStorage.getItem("items"));
+      items.forEach(function(item, index) {
+        if (id === item.id) {
+          items.splice(index, 1);
+        }
+      });
+
+      localStorage.setItem("items", JSON.stringify(items));
+    },
+    clearItemsFromStorage: function() {
+      localStorage.removeItem("items");
     }
   };
 })();
@@ -521,6 +545,9 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     // Clear edit state
     UICtrl.clearEditState();
 
+    // Update local storage
+    StorageCtrl.UpdateItemStorage(updatedItem);
+
     e.preventDefault();
   };
 
@@ -538,8 +565,10 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
     //   Update inventory totals
     setInventroyTotals();
 
-    // Clear edit
+    // Delete from local storage
+    StorageCtrl.deleteItemFromLocalStorage(currentItem.id);
 
+    // Clear edit
     UICtrl.clearEditState();
 
     e.preventDefault();
@@ -552,6 +581,9 @@ const App = (function(ItemCtrl, StorageCtrl, UICtrl) {
 
     // Remove all items from UI
     UICtrl.removeItems();
+
+    // Clear all items form Local storage
+    StorageCtrl.clearItemsFromStorage();
 
     //   Update inventory totals
     setInventroyTotals();

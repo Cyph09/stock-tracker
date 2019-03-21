@@ -41,7 +41,8 @@ const ItemController = (function() {
       //   }
     ],
     currentItem: null,
-    overallCost: 0
+    totlaItems: 0,
+    totalCost: 0
   };
 
   //   Public members
@@ -70,6 +71,49 @@ const ItemController = (function() {
       data.items.push(newItem);
 
       return newItem;
+    },
+
+    // Get item by Id
+    getItemById: function(id) {
+      let found = null;
+
+      // Loop through items
+      data.items.forEach(function(item) {
+        if (item.id === id) {
+          found = item;
+        }
+      });
+
+      return found;
+    },
+
+    // Update edited item
+    updateItem: function(name, quantity, unitCost) {
+      // Qunatity to number and unitCost to float
+      quantity = parseInt(quantity);
+      unitCost = parseFloat(unitCost);
+
+      let found = null;
+      // Loop through item to find the right item by its id
+      data.items.forEach(function(item) {
+        if (item.id === data.currentItem.id) {
+          item.name = name;
+          item.quantity = quantity;
+          item.unitCost = unitCost;
+          found = item;
+        }
+      });
+      return found;
+    },
+
+    // Set the current
+    setCurrentItem: function(item) {
+      data.currentItem = item;
+    },
+
+    // Get current item
+    getCurrentItem: function() {
+      return data.currentItem;
     },
 
     // Total items
@@ -118,7 +162,11 @@ const UIController = (function() {
   const UISelectors = {
     inventorySection: "#inventory-section",
     inventoryTBody: "#inventory-tbody",
+    tBodyRows: "#inventory-tbody tr",
     addBtn: ".add-btn",
+    editBtn: ".edit-btn",
+    deleteBtn: ".delete-btn",
+    backBtn: ".back-btn",
     itemNameInput: "#item-name",
     itemQuantityInput: "#item-qty",
     itemUnitCostInput: "#item-cost",
@@ -180,6 +228,28 @@ const UIController = (function() {
         .insertAdjacentElement("beforeend", tr);
     },
 
+    // Update item
+    updateTRowItem: function(item) {
+      let tBodyRows = document.querySelectorAll(UISelectors.tBodyRows);
+
+      // Convert tBodyRows into an array
+      tBodyRows = Array.from(tBodyRows);
+
+      tBodyRows.forEach(function(tBodyRow) {
+        const itemID = tBodyRow.getAttribute("id");
+
+        if (itemID === `item-${item.id}`) {
+          document.querySelector(`#${itemID}`).innerHTML = `<td>${
+            item.name
+          }</td>
+          <td>${item.quantity}</td>
+          <td>$${item.unitCost}</td>
+          <td>$${item.quantity * item.unitCost}</td>
+          <td><a href="#"><i class="edit-item fas fa-pencil-alt"></i></a></td>`;
+        }
+      });
+    },
+
     // Add/set total items
     showTotalItems: function(total) {
       document.querySelector(UISelectors.totalItems).textContent = total;
@@ -197,10 +267,40 @@ const UIController = (function() {
       document.querySelector(UISelectors.itemNameInput).focus();
     },
 
+    // Add item to form
+    addItemToForm: function() {
+      document.querySelector(
+        UISelectors.itemNameInput
+      ).value = ItemController.getCurrentItem().name;
+      document.querySelector(
+        UISelectors.itemQuantityInput
+      ).value = ItemController.getCurrentItem().quantity;
+      document.querySelector(
+        UISelectors.itemUnitCostInput
+      ).value = ItemController.getCurrentItem().unitCost;
+    },
+
     // Hide table/Inventory section
     hideInventorySecotion: function() {
       document.querySelector(UISelectors.inventorySection).style.display =
         "none";
+    },
+
+    // Clear edit state
+    clearEditState: function() {
+      UIController.clearInput();
+      document.querySelector(UISelectors.editBtn).style.display = "none";
+      document.querySelector(UISelectors.deleteBtn).style.display = "none";
+      document.querySelector(UISelectors.backBtn).style.display = "none";
+      document.querySelector(UISelectors.addBtn).style.display = "inline";
+    },
+
+    // Show edit state
+    showEditState: function() {
+      document.querySelector(UISelectors.editBtn).style.display = "inline";
+      document.querySelector(UISelectors.deleteBtn).style.display = "inline";
+      document.querySelector(UISelectors.backBtn).style.display = "inline";
+      document.querySelector(UISelectors.addBtn).style.display = "none";
     },
     // Get UI selectors
     getSelectors: function() {
@@ -220,6 +320,34 @@ const App = (function(ItemCtrl, UICtrl) {
     document
       .querySelector(UISelectors.addBtn)
       .addEventListener("click", itemAddSubmit);
+
+    // Disable submit on enter
+    document.addEventListener("keypress", function(e) {
+      if (e.keyCode === 13 || e.which === 13) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Back button click to clear edit state and return to add state
+    document
+      .querySelector(UISelectors.backBtn)
+      .addEventListener("click", UICtrl.clearEditState);
+
+    // Edit icon/btn click event
+    document
+      .querySelector(UISelectors.inventoryTBody)
+      .addEventListener("click", itemEditClick);
+
+    // Update button click
+    document
+      .querySelector(UISelectors.editBtn)
+      .addEventListener("click", itemUpdateSubmit);
+
+    // Delete button click
+    document
+      .querySelector(UISelectors.deleteBtn)
+      .addEventListener("click", itemDeleteSubmit);
   };
 
   //   Get inventory total
@@ -264,11 +392,69 @@ const App = (function(ItemCtrl, UICtrl) {
     e.preventDefault();
   };
 
+  // click edit inventory item
+  const itemEditClick = function(e) {
+    if (e.target.classList.contains("edit-item")) {
+      // Get tabel row item id (item-0, item-1)
+      const tRowId = e.target.parentNode.parentNode.parentNode.id;
+      // Get the actual ID of the item
+      const id = parseInt(tRowId.split("-")[1]);
+
+      // Get item
+      const itemToEdit = ItemCtrl.getItemById(id);
+
+      // Set current item;
+      ItemCtrl.setCurrentItem(itemToEdit);
+
+      // Add current item to form for editing
+      UICtrl.addItemToForm();
+
+      // show edit state
+      UICtrl.showEditState();
+    }
+    e.preventDefault();
+  };
+
+  // Update item submit
+  const itemUpdateSubmit = function(e) {
+    // Get input from UI
+    const input = UICtrl.getItemInput();
+
+    // update edited item in data structure
+    const updatedItem = ItemCtrl.updateItem(
+      input.name,
+      input.quantity,
+      input.unitCost
+    );
+
+    // update UI
+    UICtrl.updateTRowItem(updatedItem);
+
+    //   Update inventory totals
+    setInventroyTotals();
+
+    // Clear edit state
+    UICtrl.clearEditState();
+
+    e.preventDefault();
+  };
+
+  // Delete item submit
+  const itemDeleteSubmit = function(e) {
+    // Remove current item from data structure
+    ItemCtrl.removeCurrentItem();
+
+    e.preventDefault();
+  };
+
   //   Public methods
   return {
     // initialize app
     init: function() {
       console.log("Initializing app...");
+
+      // Clear edit state/ set initial set
+      UICtrl.clearEditState();
 
       //   Fetch items from data structure
       const items = ItemCtrl.getItems();
